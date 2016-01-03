@@ -1,0 +1,12 @@
+{
+    "name" : "orchard",
+    "description": "A simple home security system",
+    "version" : "0.0.1",
+    "author": {
+        "name": "Bare Knuckle Code Limited",
+        "email": "mark@bareknucklecode.com"
+    },
+    "dependencies" : {
+        "onoff" : "1.0.3"
+    }
+}
