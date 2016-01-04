@@ -2,14 +2,21 @@
 
 let Server = require('./server');
 let Alarm = require('./alarm');
+
+let PinInAdaptor = require('./data/pininadaptor.js');
+
 let GenericPirGenerator = require('./generator/genericpir.js');
+
 let IftttMakerNotifier = require('./notifiers/iftttmaker.js');
 let LoggerNotifier = require('./notifiers/logger.js');
 
 const alarm = new Alarm({
     generators: [
         new GenericPirGenerator({
-            gpio: 9,
+            tamperDataAdaptor: new PinInAdaptor({
+                gpio: 9,
+                mode: 'interrupt'
+            }),
             zone: 'Office',
             tamper: {
                 mode: 'nc'

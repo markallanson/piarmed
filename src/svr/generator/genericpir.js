@@ -1,7 +1,6 @@
 "use strict";
 
-let EventEmitter = require('events');
-var Gpio = require("onoff").Gpio;
+let EventEmitter = require("events");
 
 module.exports = function(config) {
     const me = this;
@@ -13,7 +12,8 @@ module.exports = function(config) {
         console.log("Starting Generic PIR generator for zone '" + config.zone + "'");
         if (!me.emitter) {
             me.emitter = new EventEmitter();
-            startGpio();
+            this.config.tamperDataAdaptor.emitter.on('data', processTamper);
+            this.config.tamperDataAdaptor.emitter.on('error', processTamperError);
         }
         return  {
             zone: me.config.zone,
@@ -29,17 +29,15 @@ module.exports = function(config) {
         }
     }
 
-    function startGpio() {
-        let tamper = new Gpio(me.config.gpio, 'in', 'both');
-        tamper.watch(function(err, val) {
-            // fire the tamper start/end events when a tamper event occurs.
-            if (err) {
-                console.log("Could not watch for zone '" + config.zone + "'. " + err);
-            } else if (val && me.config.tamper.mode === 'nc') {
-                me.emitter.emit("tamper", { event: "tamper-start", zone: me.config.zone });
-            } else {
-                me.emitter.emit("tamper", { event: "tamper-end", zone: me.config.zone });
-            }
-        });
+    function processTamper(val) {
+        if (val && config.tamper.mode == 'nc') {
+            me.emitter.emit("tamper", { event: "tamper-end", zone: me.config.zone });
+        } else {
+            me.emitter.emit("tamper", { event: "tamper-start", zone: me.config.zone });
+        }
+    }
+
+    function processTamperError(err) {
+        console.log("Error while checking Tamper signal.", err);
     }
 };
