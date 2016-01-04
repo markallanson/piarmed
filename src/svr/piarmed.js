@@ -13,12 +13,12 @@ let LoggerNotifier = require('./notifiers/logger.js');
 const alarm = new Alarm({
     generators: [
         new GenericPirGenerator({
-            tamperDataAdaptor: new PinInAdaptor({
-                gpio: 9,
-                mode: 'interrupt'
-            }),
             zone: 'Office',
             tamper: {
+                dataAdaptor: new PinInAdaptor({
+                    gpio: 9,
+                    mode: 'interrupt'
+                }),
                 mode: 'nc'
             }
          })

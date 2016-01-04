@@ -2,6 +2,18 @@
 
 let EventEmitter = require("events");
 
+/**
+ * Implementation of a generic PIR that can report tamper and movement events.
+ *
+ * Configuration:
+ * {
+ *   zone: "Office", // A text string representing the zone the PIR monitors.
+ *   tamper: {
+ *     dataAdaptor: ..., // The data adaptor that reports tamper data events.
+ *     mode: "nc|no" // whether tamper switch operates an normally closed, or normally open mode.
+ *   }
+ * }
+ */
 module.exports = function(config) {
     const me = this;
     this.config = config;
@@ -12,8 +24,10 @@ module.exports = function(config) {
         console.log("Starting Generic PIR generator for zone '" + config.zone + "'");
         if (!me.emitter) {
             me.emitter = new EventEmitter();
-            this.config.tamperDataAdaptor.emitter.on('data', processTamper);
-            this.config.tamperDataAdaptor.emitter.on('error', processTamperError);
+            this.config.tamper.dataAdaptor.emitter.on('data', processTamper);
+            this.config.tamper.dataAdaptor.emitter.on('error', processTamperError);
+            // do an initial read to get the current value to start us off
+            setTimeout(function() { processTamper(me.config.tamper.dataAdaptor.getValue()); }, 100);
         }
         return  {
             zone: me.config.zone,
@@ -30,7 +44,8 @@ module.exports = function(config) {
     }
 
     function processTamper(val) {
-        if (val && config.tamper.mode == 'nc') {
+        if ((val && config.tamper.mode == 'nc') ||
+            (!val && config.tamper.mode == 'no')) {
             me.emitter.emit("tamper", { event: "tamper-end", zone: me.config.zone });
         } else {
             me.emitter.emit("tamper", { event: "tamper-start", zone: me.config.zone });
