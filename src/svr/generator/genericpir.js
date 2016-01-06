@@ -28,6 +28,11 @@ module.exports = function(config) {
             this.config.tamper.dataAdaptor.emitter.on('error', processTamperError);
             // do an initial read to get the current value to start us off
             setTimeout(function() { processTamper(me.config.tamper.dataAdaptor.getValue()); }, 100);
+
+            this.config.movement.dataAdaptor.emitter.on('data', processMovement);
+            this.config.movement.dataAdaptor.emitter.on('error', processMovement);
+            // do an initial read to get the current value to start us off
+            setTimeout(function() { processMovement(me.config.movement.dataAdaptor.getValue()); }, 100);
         }
         return  {
             zone: me.config.zone,
@@ -54,5 +59,18 @@ module.exports = function(config) {
 
     function processTamperError(err) {
         console.log("Error while checking Tamper signal.", err);
+    }
+
+    function processMovement(val) {
+        if ((val && config.movement.mode == 'nc') ||
+            (!val && config.movement.mode == 'no')) {
+            me.emitter.emit("movement", { event: "movement-end", zone: me.config.zone });
+        } else {
+            me.emitter.emit("movement", { event: "movement-start", zone: me.config.zone });
+        }
+    }
+
+    function processMovementError(err) {
+        console.log("Error while checking Movement signal.", err);
     }
 };

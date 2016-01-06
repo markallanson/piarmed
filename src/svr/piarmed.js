@@ -20,6 +20,14 @@ const alarm = new Alarm({
                     mode: 'interrupt'
                 }),
                 mode: 'nc'
+            },
+            movement: {
+                dataAdaptor: new PinInAdaptor({
+                    gpio: 25,
+                    mode: 'poll',
+                    pollInterval: 2000
+                }),
+                mode: 'nc'
             }
          })
     ],
