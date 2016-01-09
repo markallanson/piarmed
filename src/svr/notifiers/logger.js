@@ -5,10 +5,10 @@ module.exports = class {
     }
 
     interestedIn() {
-        return [ 'movement', 'tamper' ];
+        return this.config.interestedIn;
     }
 
     notify(event) {
-        console.info("Event Occurred - ", event);
+        console.info(new Date(), "Event Occurred - ", event);
     }
 }

@@ -4,7 +4,6 @@ let EventEmitter = require('events');
 
 module.exports = function(config) {
     const me = this;
-    this.config = config;
     this.start = start;
     this.stop = stop;
 
@@ -15,7 +14,7 @@ module.exports = function(config) {
             fake();
         }
         return  {
-            zone: me.config.zone,
+            zone: config.zone,
             emitter: me.emitter,
         };
     }

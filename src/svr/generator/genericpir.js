@@ -16,26 +16,26 @@ let EventEmitter = require("events");
  */
 module.exports = function(config) {
     const me = this;
-    this.config = config;
+
     this.start = start;
     this.stop = stop;
+    this.inputFilter = []
+
+    let tamperState = 0;
+    let movementState = 0;
 
     function start() {
         console.log("Starting Generic PIR generator for zone '" + config.zone + "'");
         if (!me.emitter) {
             me.emitter = new EventEmitter();
-            this.config.tamper.dataAdaptor.emitter.on('data', processTamper);
-            this.config.tamper.dataAdaptor.emitter.on('error', processTamperError);
-            // do an initial read to get the current value to start us off
-            setTimeout(function() { processTamper(me.config.tamper.dataAdaptor.getValue()); }, 100);
+            config.tamper.dataAdaptor.emitter.on('data', processTamper);
+            config.tamper.dataAdaptor.emitter.on('error', processTamperError);
 
-            this.config.movement.dataAdaptor.emitter.on('data', processMovement);
-            this.config.movement.dataAdaptor.emitter.on('error', processMovement);
-            // do an initial read to get the current value to start us off
-            setTimeout(function() { processMovement(me.config.movement.dataAdaptor.getValue()); }, 100);
+            config.movement.dataAdaptor.emitter.on('data', processMovement);
+            config.movement.dataAdaptor.emitter.on('error', processMovement);
         }
         return  {
-            zone: me.config.zone,
+            zone: config.zone,
             state: 'started',
             emitter: me.emitter,
         };
@@ -51,9 +51,23 @@ module.exports = function(config) {
     function processTamper(val) {
         if ((val && config.tamper.mode == 'nc') ||
             (!val && config.tamper.mode == 'no')) {
-            me.emitter.emit("tamper", { event: "tamper-end", zone: me.config.zone });
+            endTamper();
         } else {
-            me.emitter.emit("tamper", { event: "tamper-start", zone: me.config.zone });
+            startTamper();
+        }
+    }
+
+    function endTamper() {
+        if (tamperState) {
+            tamperState = 0;
+            me.emitter.emit("tamper", { event: "tamper-end", zone: config.zone });
+        }
+    }
+
+    function startTamper() {
+        if (!tamperState) {
+            tamperState = 1;
+            me.emitter.emit("tamper", { event: "tamper-start", zone: config.zone });
         }
     }
 
@@ -64,10 +78,24 @@ module.exports = function(config) {
     function processMovement(val) {
         if ((val && config.movement.mode == 'nc') ||
             (!val && config.movement.mode == 'no')) {
-            me.emitter.emit("movement", { event: "movement-end", zone: me.config.zone });
+            endMovement();
         } else {
-            me.emitter.emit("movement", { event: "movement-start", zone: me.config.zone });
+            startMovement();
         }
+    }
+
+    function startMovement() {
+       if (!movementState) {
+           movementState = 1;
+           me.emitter.emit("movement", { event: "movement-start", zone: config.zone });
+       }
+    }
+
+    function endMovement() {
+       if (movementState) {
+           movementState = 0;
+           me.emitter.emit("movement", { event: "movement-end", zone: config.zone });
+       }
     }
 
     function processMovementError(err) {

@@ -1,39 +1,57 @@
 "use strict";
 
 let Server = require('./server');
-let Alarm = require('./alarm');
+const Alarm = require('./alarm');
 
-let PinInAdaptor = require('./data/pininadaptor.js');
+const Mcp23017 = require('./ics/mcptwothreezerooneseven.js');
 
-let GenericPirGenerator = require('./generator/genericpir.js');
+const InputFilter = require('./data/inputfilter.js');
+const Mcp23017InAdaptor = require('./data/mcptwothreezerooneseveninadaptor.js');
 
-let IftttMakerNotifier = require('./notifiers/iftttmaker.js');
-let LoggerNotifier = require('./notifiers/logger.js');
+const GenericPirGenerator = require('./generator/genericpir.js');
+
+const IftttMakerNotifier = require('./notifiers/iftttmaker.js');
+const LoggerNotifier = require('./notifiers/logger.js');
+
+const ioExpander1 = new Mcp23017({
+   bus: 1, // 1 for 2/B+/A+/Zero 0 for Model B/A
+   address: 0x20,
+   pins: [
+       { id: 1, pullup: true, direction: "in" },
+       { id: 2, pullup: true, direction: "in" },
+   ],
+   pollInterval: 10,
+});
 
 const alarm = new Alarm({
     generators: [
         new GenericPirGenerator({
             zone: 'Office',
             tamper: {
-                dataAdaptor: new PinInAdaptor({
-                    gpio: 9,
-                    mode: 'interrupt'
+                dataAdaptor: new InputFilter({
+                    sampleSize: 10,
+                    dataAdaptor: new Mcp23017InAdaptor({
+                        mcp23017: ioExpander1,
+                        pin: 1,
+                    })
                 }),
-                mode: 'nc'
+                mode: 'no'
             },
             movement: {
-                dataAdaptor: new PinInAdaptor({
-                    gpio: 25,
-                    mode: 'poll',
-                    pollInterval: 2000
+                dataAdaptor: new InputFilter({
+                    sampleSize: 10,
+                    dataAdaptor: new Mcp23017InAdaptor({
+                        mcp23017: ioExpander1,
+                        pin: 2,
+                    })
                 }),
-                mode: 'nc'
+                mode: 'no'
             }
          })
     ],
     notifiers: [
         //new IftttMakerNotifier({}),
-        new LoggerNotifier({})
+        new LoggerNotifier({ interestedIn: ['tamper', 'movement'] })
     ]
 });
 let alarmEmitter = alarm.start();

@@ -21,7 +21,6 @@ const Gpio = require("onoff").Gpio;
  * }
  */
 module.exports = function(config) {
-    this.config = config;
     this.emitter = new EventEmitter();
     this.getValue = getValue;
 
@@ -51,7 +50,7 @@ module.exports = function(config) {
     /** Starts the data in adaptor in poll mode. */
     function startPoll() {
         openGpio();
-        if (!me.config.pollInterval) {
+        if (!config.pollInterval) {
             throw Error("Mode set to poll but no pollInterval available");
         }
         pollRead();
@@ -76,7 +75,7 @@ module.exports = function(config) {
 
     /** Opens the gpio ready for input. */
     function openGpio(interruptMode) {
-        gpio = new Gpio(me.config.gpio, 'in', interruptMode);
+        gpio = new Gpio(config.gpio, 'in', interruptMode);
     }
 
     function pollRead() {
@@ -84,7 +83,7 @@ module.exports = function(config) {
             // emit the value then re-initiate the next read.
             emit(gpio.readSync());
             pollRead();
-        }, me.config.pollInterval)
+        }, config.pollInterval)
     }
 
     /** Emits the specified value as a data event. */
