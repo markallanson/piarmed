@@ -1,9 +1,12 @@
 "use strict";
 
-let EventEmitter = require('events');
+const EventEmitter = require('events');
+const Bunyan = require("bunyan");
 
 module.exports = function(config) {
     const me = this;
+    const log = Bunyan.createLogger({ name: "AlarmController"})
+
     this.generators = [];
     this.start = start;
     this.stop = stop;
@@ -11,27 +14,40 @@ module.exports = function(config) {
     function start() {
         me.emitter = new EventEmitter();
 
-        // start alarms
+        // start generators
         for (let generator of config.generators) {
-            me.generators.push(generator.start());
+            me.generators.push(generator.inst.start());
         }
         // wire up each notifier to the events they are interested in on each generator.
         for (let notifier of config.notifiers) {
-            for (let interestedIn of notifier.interestedIn()) {
+            for (let interestedIn of notifier.inst.interestedIn()) {
                 for (let generator of me.generators) {
-                    generator.emitter.on(interestedIn, notifier.notify);
+                    generator.emitter.on(interestedIn, notifier.inst.notify);
                 }
             }
         }
+
+        for (let notifier of config.notifiers) {
+            notifier.inst.notify({ event: "power-on" });
+        }
+
+        // wait for kill signal, and initiate the shutdown process.
+        process.on( 'SIGINT', function() {
+            log.info("SIGINT (Ctrl-C)", "Initiating alarm shutdown");
+            stop();
+            process.exit(0);
+        })
 
         return me.emitter;
     }
 
     function stop() {
-        this.emitter = null;
-        // stop actors
         for (let generator of config.generators) {
-            generator.stop();
+            generator.inst.stop();
         }
+        for (let notifier of config.notifiers) {
+            notifier.inst.notify({ event: "shutdown" });
+        }
+        me.emitter = null;
     }
 }

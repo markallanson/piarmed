@@ -1,0 +1,150 @@
+{
+    "ics-cmt": "The ICs that are on the circuit. Names can be referenced in generators or notifiers that need to use the IC.",
+    "ics": [
+        {
+            "name": "io-expander-1",
+            "module": "./ics/mcptwothreezerooneseven.js",
+            "cfg": {
+                "bus-cmt": "What bus number. Model A/B - 0, A+,B+,2,Zero - 1",
+                "bus": 1,
+                "address-cmt": "The address on the I2C bus, in decimal (i.e. hex 0x20). json does not support hex",
+                "address": 32,
+                "pins-cmt": "How to configure each pin on the IO expander",
+                "pins": [
+                    { "id": 1,  "pullup": false, "direction": "out" },
+                    { "id": 2,  "pullup": true, "direction": "in" }
+                ],
+                "pollInterval-cmt": "in milliseconds",
+                "pollInterval": 10
+            }
+        }
+    ],
+    "combos-cmt": "A  Combo is something that is registered as both a generator and a notifier.",
+    "combos": [
+        {
+            "name": "alarmbot",
+            "module": "./combos/alarmbotslackbot",
+            "cfg": {
+                "token": "..."
+            }
+        },
+        {
+            "name": "alarmstatemanager",
+            "module": "./combos/alarmstatemanager",
+            "cfg": { }
+        },
+        {
+            "name": "presencemanager",
+            "module": "./combos/presencemanager",
+            "cfg": { }
+        }
+    ],
+    "generators-cmt": "A generator is responsible to generating events in the alarm system when conditions occur, such as movement in a zone.",
+    "generators": [
+        {
+            "name": "office-pir",
+            "module": "./generator/genericpir",
+            "cfg": {
+                "zone": "Office",
+                "inputs": [
+                    {
+                        "name": "tamper",
+                        "mode": "normally open",
+                        "dataAdaptor": {
+                            "module": "./data/mcptwothreezerooneseveninadaptor",
+                            "filter": {
+                                "module": "./data/inputfilter",
+                                "cfg": {
+                                    "sampleSize": 50
+                                }
+                            },
+                            "cfg": {
+                                "ic": "io-expander-1",
+                                "pin": 10
+                            }
+                        }
+                    },
+                    {
+                        "name": "movement",
+                        "mode": "normally open",
+                        "dataAdaptor": {
+                            "module": "./data/mcptwothreezerooneseveninadaptor",
+                            "filter": {
+                                "module": "./data/inputfilter",
+                                "cfg": {
+                                    "sampleSize": 50
+                                }
+                            },
+                            "cfg": {
+                                "ic": "io-expander-1",
+                                "pin": 9
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "notifiers-cmt": "A notifier is responsible for reacting to events and notifying in some way, sugh as logging a message, lighting a led, sounding siren, sending a message to you...",
+    "notifiers": [
+        {
+            "name": "logger",
+            "module": "./notifiers/logger",
+            "cfg": {
+                "interestedIn-cmt": "What events to log.",
+                "interestedIn": [
+                    "tamper",
+                    "movement"
+                ]
+            }
+        },
+        {
+            "name": "power-led-notifier",
+            "module": "./notifiers/lednotifier",
+            "outputAdaptor": {
+                "module": "./data/mcptwothreezeroonesevenoutadaptor",
+                "cfg": {
+                    "ic": "io-expander-1",
+                    "pin": 8
+                }
+            },
+            "cfg": {
+                "interestedIn": [ "power" ],
+                "onEvent": "power-on",
+                "offEvent": "power-off"
+            }
+        },
+        {
+            "name": "tamper-led-notifier",
+            "module": "./notifiers/lednotifier",
+            "outputAdaptor": {
+                "module": "./data/mcptwothreezeroonesevenoutadaptor",
+                "cfg": {
+                    "ic": "io-expander-1",
+                    "pin": 7
+                }
+            },
+            "cfg": {
+                "interestedIn": [ "tamper" ],
+                "onEvent": "tamper-start",
+                "offEvent": "tamper-end"
+            }
+        },
+        {
+            "name": "movement-led-notifier",
+            "module": "./notifiers/lednotifier",
+            "outputAdaptor": {
+                "module": "./data/mcptwothreezeroonesevenoutadaptor",
+                "cfg": {
+                    "ic": "io-expander-1",
+                    "pin": 6
+                }
+            },
+            "cfg": {
+                "interestedIn": [ "movement" ],
+                "onEvent": "movement-start",
+                "offEvent": "movement-end"
+            }
+        }
+    ]
+}

@@ -8,7 +8,7 @@ module.exports = function(config) {
     this.stop = stop;
 
     function start() {
-        console.log("Starting Fake Movement generator for zone '" + config.zone + "'");
+        console.log("Starting Fake Tamper generator for zone '" + config.zone + "'");
         if (!me.emitter) {
             me.emitter = new EventEmitter();
             fake();
@@ -20,7 +20,7 @@ module.exports = function(config) {
     }
 
     function stop() {
-        console.log("Stopping Fake Movement generator for zone '" + config.zone + "'");
+        console.log("Stopping Fake Tamper generator for zone '" + config.zone + "'");
         if (me.emitter) {
             me.emitter = null;
         }
@@ -29,9 +29,9 @@ module.exports = function(config) {
     function fake() {
         setTimeout(function() {
             if (me.emitter) {
-                me.emitter.emit('movement', { event: 'movement', zone: "Living Room" });
+                me.emitter.emit('tamper', { event: 'tamper-start', zone: config.zone });
             }
             fake();
-        }, 10000);
+        }, 5000);
     }
 };

@@ -1,14 +1,17 @@
 "use strict";
-module.exports = class {
-    constructor(config) {
-        this.config = config;
+const Bunyan = require("bunyan");
+
+module.exports = function(config) {
+    this.interestedIn = interestedIn;
+    this.notify = notify;
+
+    const log = Bunyan.createLogger({ name: "EventLogger" });
+
+    function interestedIn() {
+        return config.interestedIn;
     }
 
-    interestedIn() {
-        return this.config.interestedIn;
-    }
-
-    notify(event) {
-        console.info(new Date(), "Event Occurred - ", event);
+    function notify(event) {
+        log.info(event);
     }
 }

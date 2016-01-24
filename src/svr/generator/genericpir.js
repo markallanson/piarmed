@@ -1,6 +1,7 @@
 "use strict";
 
 let EventEmitter = require("events");
+const Bunyan = require("bunyan");
 
 /**
  * Implementation of a generic PIR that can report tamper and movement events.
@@ -10,47 +11,55 @@ let EventEmitter = require("events");
  *   zone: "Office", // A text string representing the zone the PIR monitors.
  *   tamper: {
  *     dataAdaptor: ..., // The data adaptor that reports tamper data events.
- *     mode: "nc|no" // whether tamper switch operates an normally closed, or normally open mode.
+ *     mode: "normally closed|normally open" // whether tamper switch operates an normally closed, or normally open mode.
  *   }
  * }
  */
 module.exports = function(config) {
     const me = this;
+    const log = Bunyan.createLogger({ name: "GenericPir-" + config.zone });
 
     this.start = start;
     this.stop = stop;
-    this.inputFilter = []
+
+    const tamperInput = config.inputs.find(function(input) { return input.name === "tamper" });
+    const movementInput = config.inputs.find(function(input) { return input.name === "movement" });
+
+    const normallyOpen = "normally open";
+    const normallyClosed = "normally closed"
 
     let tamperState = 0;
     let movementState = 0;
 
     function start() {
-        console.log("Starting Generic PIR generator for zone '" + config.zone + "'");
+        log.info("Starting Generic PIR generator for zone '" + config.zone + "'");
+        log.info("Tamper Circuit Mode: " + tamperInput.mode);
+        log.info("Movement Circuit Mode: " + movementInput.mode);
+
         if (!me.emitter) {
             me.emitter = new EventEmitter();
-            config.tamper.dataAdaptor.emitter.on('data', processTamper);
-            config.tamper.dataAdaptor.emitter.on('error', processTamperError);
+            tamperInput.dataAdaptor.emitter.on("data", processTamper);
+            tamperInput.dataAdaptor.emitter.on("error", processTamperError);
 
-            config.movement.dataAdaptor.emitter.on('data', processMovement);
-            config.movement.dataAdaptor.emitter.on('error', processMovement);
+            movementInput.dataAdaptor.emitter.on("data", processMovement);
+            movementInput.dataAdaptor.emitter.on("error", processMovementError);
         }
         return  {
             zone: config.zone,
-            state: 'started',
             emitter: me.emitter,
         };
     }
 
     function stop() {
-        console.log("Stopping Generic PIR generator for zone '" + config.zone + "'");
+        log.info("Stopping Generic PIR generator for zone '" + config.zone + "'");
         if (me.emitter) {
             me.emitter = null;
         }
     }
 
     function processTamper(val) {
-        if ((val && config.tamper.mode == 'nc') ||
-            (!val && config.tamper.mode == 'no')) {
+        if ((val && tamperInput.mode === normallyClosed) ||
+            (!val && tamperInput.mode === normallyOpen)) {
             endTamper();
         } else {
             startTamper();
@@ -72,12 +81,12 @@ module.exports = function(config) {
     }
 
     function processTamperError(err) {
-        console.log("Error while checking Tamper signal.", err);
+        log.info("Error while checking Tamper signal.", err);
     }
 
     function processMovement(val) {
-        if ((val && config.movement.mode == 'nc') ||
-            (!val && config.movement.mode == 'no')) {
+        if ((val && movementInput.mode == normallyClosed) ||
+            (!val && movementInput.mode == normallyOpen)) {
             endMovement();
         } else {
             startMovement();
@@ -99,6 +108,6 @@ module.exports = function(config) {
     }
 
     function processMovementError(err) {
-        console.log("Error while checking Movement signal.", err);
+        log.info("Error while checking Movement signal.", err);
     }
 };

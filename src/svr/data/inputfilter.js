@@ -1,13 +1,20 @@
 "use strict"
 
 const EventEmitter = require("events");
+const Bunyan = require("bunyan");
 
 /**
  * An input filter that keeps a buffer of the last N input values
- * and only releases the value upstream if all of them are the same.
+ * and only releases the value upstream if all of them are the same.<p>
+ *
+ * This acts as a simple noise filter by giving time for any signal changes
+ * to stabilize. This should also filter out bouncing commonly associated with
+ * things like button states.
  */
 module.exports = function(config) {
     const me = this;
+    const log = Bunyan.createLogger({ name: "InputFilter" });
+
     const buffer = new Array(config.sampleSize);
     const maxIndex = config.sampleSize - 1;
     let index = 0;
@@ -15,7 +22,7 @@ module.exports = function(config) {
     this.push = push;
     this.emitter = new EventEmitter();
 
-    console.log("InputFilter", "Sample Size: ", config.sampleSize, "Max Index", maxIndex);
+    log.info("Sample Size: ", config.sampleSize);
 
     config.dataAdaptor.emitter.on("data", function(val) {
        if (push(val)) {
@@ -49,6 +56,6 @@ module.exports = function(config) {
            bufferString += v;
        });
        bufferString += "|";
-       console.log("InputFilter", bufferString);
+       log.info("InputFilter", bufferString);
     }
 }

@@ -1,0 +1,173 @@
+{
+    "ics": [
+        {
+            "name": "io-expander-1",
+            "module": "./ics/mcptwothreezerooneseven.js",
+            "cfg": {
+                "bus": 1,
+                "address": 32,
+                "pins": [
+                    { "id": 6,  "pullup": false, "direction": "out" },
+                    { "id": 7,  "pullup": false, "direction": "out" },
+                    { "id": 8,  "pullup": false, "direction": "out" },
+                    { "id": 9,  "pullup": true, "direction": "in" },
+                    { "id": 10, "pullup": true, "direction": "in" },
+                    { "id": 11, "pullup": true, "direction": "in" },
+                    { "id": 12, "pullup": true, "direction": "in" },
+                    { "id": 13, "pullup": true, "direction": "in" },
+                    { "id": 14, "pullup": true, "direction": "in" },
+                    { "id": 15, "pullup": true, "direction": "in" },
+                    { "id": 16, "pullup": true, "direction": "in" },
+                    { "id": 17, "pullup": true, "direction": "in" },
+                    { "id": 18, "pullup": true, "direction": "in" }
+                ],
+                "pollInterval": 10
+            }
+        },
+        {
+            "name": "io-expander-2",
+            "module": "./ics/mcptwothreezerooneseven.js",
+            "cfg": {
+                "bus": 1,
+                "address": 36,
+                "pins": [
+                    { "id": 1,  "pullup": true, "direction": "in" },
+                    { "id": 2, "pullup": true, "direction": "in" },
+                    { "id": 3, "pullup": true, "direction": "in" },
+                    { "id": 4, "pullup": true, "direction": "in" },
+                    { "id": 5, "pullup": true, "direction": "in" },
+                    { "id": 6, "pullup": true, "direction": "in" },
+                    { "id": 7, "pullup": true, "direction": "in" },
+                    { "id": 8, "pullup": true, "direction": "in" },
+                    { "id": 9, "pullup": true, "direction": "in" },
+                    { "id": 10, "pullup": true, "direction": "in" }
+                ],
+                "pollInterval": 10
+            }
+        }
+    ],
+    "combos": [
+        {
+            "name": "alarmbot",
+            "module": "./combos/alarmbotslackbot",
+            "cfg": {
+                "token": "..."
+            }
+        },
+        {
+            "name": "alarmstatemanager",
+            "module": "./combos/alarmstatemanager",
+            "cfg": { }
+        },
+        {
+            "name": "presencemanager",
+            "module": "./combos/presencemanager",
+            "cfg": { }
+        }
+    ],
+    "generators": [
+        {
+            "name": "office-pir",
+            "module": "./generator/genericpir",
+            "cfg": {
+                "zone": "Office",
+                "inputs": [
+                    {
+                        "name": "tamper",
+                        "mode": "normally open",
+                        "dataAdaptor": {
+                            "module": "./data/mcptwothreezerooneseveninadaptor",
+                            "filter": {
+                                "module": "./data/inputfilter",
+                                "cfg": {
+                                    "sampleSize": 200
+                                }
+                            },
+                            "cfg": {
+                                "ic": "io-expander-1",
+                                "pin": 10
+                            }
+                        }
+                    },
+                    {
+                        "name": "movement",
+                        "mode": "normally open",
+                        "dataAdaptor": {
+                            "module": "./data/mcptwothreezerooneseveninadaptor",
+                            "filter": {
+                                "module": "./data/inputfilter",
+                                "cfg": {
+                                    "sampleSize": 50
+                                }
+                            },
+                            "cfg": {
+                                "ic": "io-expander-1",
+                                "pin": 9
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "notifiers": [
+        {
+            "name": "logger",
+            "module": "./notifiers/logger",
+            "cfg": {
+                "interestedIn": [
+                    "tamper",
+                    "movement"
+                ]
+            }
+        },
+        {
+            "name": "power-led-notifier",
+            "module": "./notifiers/lednotifier",
+            "cfg": {
+                "interestedIn": [ "power" ],
+                "onEvent": "power-on",
+                "offEvent": "power-off",
+                "dataAdaptor": {
+                    "module": "./data/mcptwothreezeroonesevenoutadaptor",
+                    "cfg": {
+                        "ic": "io-expander-1",
+                        "pin": 8
+                    }
+                }
+            }
+        },
+        {
+            "name": "tamper-led-notifier",
+            "module": "./notifiers/lednotifier",
+            "cfg": {
+                "interestedIn": [ "tamper" ],
+                "onEvent": "tamper-start",
+                "offEvent": "tamper-end",
+                "dataAdaptor": {
+                    "module": "./data/mcptwothreezeroonesevenoutadaptor",
+                    "cfg": {
+                        "ic": "io-expander-1",
+                        "pin": 7
+                    }
+                }
+            }
+        },
+        {
+            "name": "movement-led-notifier",
+            "module": "./notifiers/lednotifier",
+            "cfg": {
+                "interestedIn": [ "movement" ],
+                "onEvent": "movement-start",
+                "offEvent": "movement-end",
+                "dataAdaptor": {
+                    "module": "./data/mcptwothreezeroonesevenoutadaptor",
+                    "cfg": {
+                        "ic": "io-expander-1",
+                        "pin": 6
+                    }
+                }
+            }
+        }
+    ]
+}

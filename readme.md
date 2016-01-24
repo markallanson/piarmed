@@ -22,6 +22,4 @@ The user running piarmed needs the right priviliges to do so.
 Run
 ---
     cd svr
-    npm piarmed.js
-
-
+    npm piarmed.js | bunyan

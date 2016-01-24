@@ -3,6 +3,7 @@
 
 const i2c = require("i2c-bus");
 const EventEmitter = require("events");
+const bunyan = require("bunyan");
 
 /**
  * Implementation of an MCP23017 I/O Expander. <p>
@@ -16,7 +17,9 @@ const EventEmitter = require("events");
  */
 module.exports = function(config) {
     const me = this;
-    this.emitter = new EventEmitter();
+    const log = bunyan.createLogger({ name:"mcp23017-" + config.address });
+    me.emitter = new EventEmitter();
+    me.set = set;
 
     const i2cInstance = i2c.openSync(config.bus);
 
@@ -35,12 +38,12 @@ module.exports = function(config) {
 
     setup();
 
-    console.log("IC MCP23017: Polling every ms", config.pollInterval);
+    log.info("Polling every ms", config.pollInterval);
     pollLoop();
 
     /** Sets up the MCP23017 ready to go */
     function setup() {
-        console.log(config.address, "IC MCP23017: Setting up on Bus", config.bus, "Address", config.address);
+        log.info("Setting up on Bus", config.bus);
         let inout = 0;
         let pullup = 0;
         config.pins.forEach(function(pin) {
@@ -52,8 +55,8 @@ module.exports = function(config) {
             }
         });
 
-        console.log(config.address, "IC MCP23017: Pin InOut " + inout.toString(2));
-        console.log(config.address, "IC MCP23017: Pin Pullups " + inout.toString(2));
+        log.info("Pin InOut " + inout.toString(2));
+        log.info("Pin Pullups " + inout.toString(2));
 
         // configure the pins for Input or Output.
         // anything unconfigured will be set as an input.
@@ -69,13 +72,14 @@ module.exports = function(config) {
      * Poll the bus and report the statuses of each configured pin.
      */
     function pollLoop() {
+        // TODO: Only run this loop if we have > 1 pin set to input
         setTimeout(function() {
             // read the two status bytes from the ic
-            let a = i2cInstance.readByteSync(config.address, GPIOA_ADDR);
-            let b = i2cInstance.readByteSync(config.address, GPIOB_ADDR);
+            const a = i2cInstance.readByteSync(config.address, GPIOA_ADDR);
+            const b = i2cInstance.readByteSync(config.address, GPIOB_ADDR);
 
-//            console.log(config.address, "IC MCP23017: GPIO A " + a.toString(2));
-//            console.log(config.address, "IC MCP23017: GPIO B " + b.toString(2));
+//            log.info("GPIO A " + a.toString(2));
+//            log.info("GPIO B " + b.toString(2));
 
             // publish the status of each cnfigured pin.
             config.pins.forEach(function(pin) {
@@ -87,6 +91,38 @@ module.exports = function(config) {
             // re-enter poll
             pollLoop();
         }, config.pollInterval);
+    }
+
+    /**
+     * Sets the value on the pin to high or low.
+     */
+    function set(pin, val) {
+        const gpioRegister = pin < 9 ? GPIOA_ADDR : GPIOB_ADDR;
+        const existing = i2cInstance.readByteSync(config.address, gpioRegister)
+        var updated = encode(pin, val, existing);
+        i2cInstance.writeByteSync(config.address, gpioRegister, updated);
+    }
+
+    /**
+     * Calculates the updated value for the gpio register.
+     *
+     * Example: Currently Pin 1 and 8 are on, We want to turn on pin 4
+     * 10000001 | pinMap(4)
+     * 10000001 | 00001000
+     * 10001001
+     *
+     * Example: Currently Pin 1 and 8 and 4 are on, We want to turn off pin 4
+     * 10001001 & ~pinMap(4)
+     * 10001001 & ~00001000
+     * 10001001 & 11110111
+     * 10000001
+     */
+    function encode(pin, val, existing) {
+        if (val) {
+            return existing | pinMap(pin);
+        } else {
+            return existing & ~pinMap(pin);
+        }
     }
 
     /**
@@ -109,7 +145,7 @@ module.exports = function(config) {
      * Decoded value: 1
      */
     function decode(pinId, gpioState) {
-        return (pinMap(pinId) & gpioState) >> ((pinId - 1) % 8);
+        return (pinMap(pinId % 8) & gpioState) >> ((pinId - 1) % 8);
     }
 
     /**
@@ -138,6 +174,6 @@ module.exports = function(config) {
      * @returns A single byte representing the address of that Pin in it's GPIO bank.
      */
     function pinMap(pinId) {
-        return 1 << ((pinId - 1) % 8);
+        return 1 << (pinId - 1);
     }
 }
