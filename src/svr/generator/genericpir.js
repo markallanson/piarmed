@@ -21,6 +21,7 @@ module.exports = function(config) {
 
     this.start = start;
     this.stop = stop;
+    this.emitter = new EventEmitter();
 
     const tamperInput = config.inputs.find(function(input) { return input.name === "tamper" });
     const movementInput = config.inputs.find(function(input) { return input.name === "movement" });
@@ -36,22 +37,18 @@ module.exports = function(config) {
         log.info("Tamper Circuit Mode: " + tamperInput.mode);
         log.info("Movement Circuit Mode: " + movementInput.mode);
 
-        if (!me.emitter) {
-            me.emitter = new EventEmitter();
-            tamperInput.dataAdaptor.emitter.on("data", processTamper);
-            tamperInput.dataAdaptor.emitter.on("error", processTamperError);
+        tamperInput.dataAdaptor.emitter.on("data", processTamper);
+        tamperInput.dataAdaptor.emitter.on("error", processTamperError);
 
-            movementInput.dataAdaptor.emitter.on("data", processMovement);
-            movementInput.dataAdaptor.emitter.on("error", processMovementError);
-        }
-        return  {
-            zone: config.zone,
-            emitter: me.emitter,
-        };
+        movementInput.dataAdaptor.emitter.on("data", processMovement);
+        movementInput.dataAdaptor.emitter.on("error", processMovementError);
+
+        me.emitter.emit("zone", { event: "zone-online", zone: config.zone });
     }
 
     function stop() {
         log.info("Stopping Generic PIR generator for zone '" + config.zone + "'");
+        me.emitter.emit("zone", { event: "zone-offline", zone: config.zone });
         if (me.emitter) {
             me.emitter = null;
         }

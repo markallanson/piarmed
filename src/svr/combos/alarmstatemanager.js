@@ -1,6 +1,8 @@
 "use strict"
 
 const EventEmitter = require("events");
+const moment = require("moment");
+const Bunyan = require("bunyan");
 
 /**
  * The alarm state manager combo is responsible for reacting to events in the system and raising
@@ -11,6 +13,7 @@ const EventEmitter = require("events");
  */
 module.exports = function(config) {
     const me = this;
+    const log = new Bunyan({ name: "AlarmStateManager" });
 
     this.emitter = new EventEmitter();
     this.interestedIn = interestedIn;
@@ -18,24 +21,33 @@ module.exports = function(config) {
     this.start = start;
     this.stop = stop;
 
-    const zoneTracker = {}
-
-    /** Determines how alarm detects it's on or off state. */
-    const ARM_MODE_AUTO = 'auto';
-    const ARM_MODE_MANUAL = 'manual';
-    const armMode = ARM_MODE_AUTO;
-
-    /** Track the current state of the alarm: quiet, active */
-    const ALARM_STATE_INACTIVE = 'inactive';
-    const ALARM_STATE_ACTIVE = 'active'
-    const state = ALARM_STATE_INACTIVE;
+    const trackedZones = [];
 
     /** Tracks whether the alarm is currently armed or not. */
-    const armed = false;
+    let armed = false;
+
+    /** Tracks whether the alarm is in an alerting state. */
+    let alerting = false;
 
     /** Tracks the zones that are causing any alarm state. */
-    const alarmZones = {}
+    const alarmZones = {};
 
+    const eventHandlers = [
+        { event: "zone-online", handler: registerZone },
+        { event: "zone-offline", handler: unregisterZone },
+        { event: "zone-report-request", handler: generateZoneReport },
+        { event: "movement-start", handler: movementStart },
+        { event: "presence-present", handler: presencePresent },
+        { event: "presence-absent", handler: presenceAbsent },
+        { event: "alarm-arm-manual", handler: alarmArmManual },
+        { event: "alarm-disarm-manual", handler: alarmDisarmManual },
+        { event: "shutdown", handler: stop }
+    ];
+
+    const zoneState = {
+        online: "Online",
+        offline: "Offline"
+    };
 
     function start() {
         return  {
@@ -45,62 +57,120 @@ module.exports = function(config) {
     }
 
     function stop() {
-
-    }
-
-    function interestedIn() {
-        return [ 'movement' ];
-    }
-
-    function notify(event) {
-        if (event.event === 'movement-start') {
-            movementStart(event.zone);
-        } else if (event.event === 'movement-end') {
-            movementEnd(event.zone);
-        } else if (event.event === 'manual-arm') {
-            manualArm(event.source);
-        } else if (event.event === 'manual-disarm') {
-            manualDisarm(event.source);
-        } else if (event.event === 'auto-arm') {
-            autoArm(event.source);
+        if (alerting) {
+            log.info("Ending the current alert state before shutdown");
+            endAlertState("Alarm is shutting down");
         }
     }
 
-    function movementStart(zone) {
-
+    function interestedIn() {
+        return [ "movement", "tamper", "zone", "presence", "alarm", "shutdown" ];
     }
 
-    function movementEnd(zone) {
-
+    function notify(event) {
+        log.info("Received Event", event);
+        const command = eventHandlers.find(function(ec) { return ec.event === event.event; });
+        if (command) {
+            log.info("Passing off to handler", event);
+            command.handler(event);
+        } else {
+            log.info("No handler available for " + event.event);
+        }
     }
 
-    /** Switches the alarm system to auto arm or disarm based in presence state updates. */
-    function autoArm(source) {
-        armMode = ARM_MODE_AUTO;
+    /**
+     * Registers a Zone as online
+     *
+     * When a zone is online then the alarm state manager will listen to and account
+     * for events in that zone in order to trigger alarm conditions.
+    */
+    function registerZone(event) {
+        setZoneState(event.zone, zoneState.online);
     }
 
-    /** Manually arms the alarm.  */
-    function manualArm(source) {
-        armed = true;
-        armMode = ARM_MODE_MANAUL;
+    /**
+     * Registers a Zone as offline
+     *
+     * When a zone is offline the alarm state manager will ignore that zone for the
+     * purposes of triggering alarm conditions.
+    */
+    function unregisterZone(event) {
+        setZoneState(event.zone, zoneState.offline);
     }
 
-    /** Manually disarms the alarm. This switches the mode to manual, and deactivates any current alarm condition. */
-    function manualDisarm(source) {
+    /**
+     * Sets the tracking state of a zone.
+     */
+    function setZoneState(zone, state) {
+        log.info("Zone " + zone + " changed to state " + state);
+        // create or update the tracked zone's state.
+        const trackedZone = trackedZones.find(function(trackedZone) { trackedZone.zone === zone });
+        if (!trackedZone) {
+            trackedZones.push({ zone: zone, state: state });
+        } else {
+            trackedZone.state = state;
+        }
+    }
+
+    /**
+     * Generates a zone report for the requestor.
+     */
+    function generateZoneReport(event) {
+        let zoneReport = [ "Zone Report @ " + moment().format("dddd, MMMM Do YYYY, h:mm:ss a") ];
+        for (const zone of trackedZones) {
+            zoneReport.push("Zone " + zone.zone + " " + zone.state);
+        }
+        log.info("Zone Report", zoneReport);
+        log.info("Sending Zone Report to " + event.source);
+        me.emitter.emit("zone", { event: "zone-report", report: zoneReport, target: event.source });
+    }
+
+    function movementStart(event) {
+        if (armed) {
+            alerting = true;
+            me.emitter.emit("alarm", { event: "alarm-alert-start", triggerZone: event.zone })
+        }
+    }
+
+    function presencePresent(event) {
         armed = false;
-        armMode = ALARM_MODE_MANUAL;
-        deactivateAlarm();
+        if (alerting) {
+            endAlertState("Someone arrived at the premesis.");
+        }
+        notifyDisarmed("Someone arrived at the premesis.");
     }
 
-    /** Activates the alarm. This is the all bells and whistles someone is breaking in state. */
-    function activateAlarm() {
-        state = ALARM_STATE_ACTIVE;
-        this.emitter.emit('alarm-state', { state: state });
+    function presenceAbsent(event) {
+        armed = true;
+        notifyArmed("Everyone left the premesis.");
     }
 
-    /** Deactivates the alarm. This lets the everyone know the alarm condition has passed. */
-    function deactivateAlarm() {
-        state = ALARM_STATE_INACTIVE;
-        this.emitter.emit('alarm-state', { state: state });
+    function alarmArmManual(event) {
+        armed = true;
+        notifyArmed("Alarm was armed manually.");
+    }
+
+    function alarmDisarmManual(event) {
+        armed = false;
+        if (alerting) {
+            endAlertState("Alarm was manually disarmed.");
+        }
+        notifyDisarmed("Alarm was manually disarmed.");
+    }
+
+    function endAlertState(reason) {
+        alerting = false;
+        log.info("Alarm State Ended: " + reason);
+        me.emitter.emit("alarm", { event: "alarm-alert-end", reason: reason });
+    }
+
+    function notifyArmed(reason) {
+        log.info("Alarm Armed: " + reason);
+        me.emitter.emit("alarm", { event: "alarm-armed", reason: reason });
+    }
+
+    function notifyDisarmed(reason) {
+        log.info("Alarm Disarmed: " + reason);
+        me.emitter.emit("alarm", { event: "alarm-disarmed", reason: reason });
     }
 }

@@ -32,7 +32,7 @@ module.exports = function(config) {
     this.start = start;
     this.stop = stop;
 
-    const alarmBotToken = process.env.ALARM_BOT_TOKEN
+    const alarmBotToken = process.env.ALARM_BOT_TOKEN;
 
     let initialized = false;
 
@@ -49,8 +49,23 @@ module.exports = function(config) {
         "tamper-start": tamperStart,
         "tamper-end": tamperEnd,
         "movement-start": movementStart,
-        "movement-end": movementEnd
+        "movement-end": movementEnd,
+        "zone-report": zoneReportReceived,
+        "alarm-armed": alarmArmed,
+        "alarm-disarmed": alarmDisarmed,
+        "alarm-alert-start": alarmAlertStart,
+        "alarm-alert-end": alarmAlertEnd,
+        "shutdown": stop
     };
+
+    const commands = [
+        { trigger: "disarm", handler: disarmNow, help: "Immediately Disarms the alarm." },
+        { trigger: "arm now", handler: armNow, help: "Immediately Arms the alarm." },
+        { trigger: "Everyone is Away", handler: everyoneLeft },
+        { trigger: "Someone is Home", handler: someoneArrived },
+        { trigger: "zone report", handler: requestZoneReport, help: "Reports on the status of all zones." },
+        { trigger: "help", handler: showHelp }
+    ];
 
     const botBits = initialize();
 
@@ -63,6 +78,7 @@ module.exports = function(config) {
 
     function stop() {
         if (initialized) {
+            botSend(channels.alarmControlChannel, "I am shutting down so you will no longer receive notifications of alarm conditions.");
             log.info("Stopping...");
             botBits.bot.closeRTM();
             initialized = false;
@@ -104,7 +120,7 @@ module.exports = function(config) {
                 startHearing(controller);
                 setTimeout(function() {
                     log.info("Sending Welcome Message to Alarm Control Channel");
-                    botSend(channels.alarmControlChannel, "I have started monitoring the house. Type 'help' for help.");
+                    botSend(channels.alarmControlChannel, "I have started monitoring the house. Type '@alarmbot help' for help.");
                 }, 5000);
 
                 initialized = true;
@@ -117,36 +133,56 @@ module.exports = function(config) {
     function startHearing(controller) {
         const eventTypes = [ "ambient", "direct_message", "mention", "direct_mention" ];
 
-        controller.hears("entered", eventTypes, someoneArrived);
-        controller.hears("exited", eventTypes, someoneLeft);
-        controller.hears("disarm now", eventTypes, disarmNow);
-        controller.hears("arm now", eventTypes, armNow);
-        controller.hears("help", eventTypes, showHelp);
-        // controller.on("direct_message", function(bot, message) {
-        //     log.info("Received Message", message);
-        // });
+        // register all the commands for activation from human users or bots
+        for (const command of commands) {
+            log.info("Registering Command:", command);
+            controller.hears(command.trigger, eventTypes, command.handler);
+            controller.on("bot_message", function(bot, message) { dispatchBotCommand(bot, message, command);  });
+        }
+    }
+
+    /** Dispatch messages to their matching handlers. */
+    function dispatchBotCommand(bot, message, command) {
+        log.info("Processing bot message...", message);
+        if (message.type === "message" && message.attachments.length > 0) {
+            let messageText = message.attachments[0].text;
+            if (!messageText) {
+                messageText = message.attachments[0].pretext;
+            }
+            if (!messageText) {
+                messageText = message.attachments[0].fallback;
+            }
+            if (messageText && messageText.toLowerCase().indexOf(command.trigger.toLowerCase()) !== -1) {
+                command.handler(bot, message);
+            }
+        }
     }
 
     /**
-     * Emits the arm message
+     * Requests a Zone Report.
+     */
+    function requestZoneReport() {
+        me.emitter.emit("zone", { event: "zone-report-request", source: "alarmbot" });
+    }
+
+    /**
+     * Emits a presence message indicating someone has arrived at the facility being monitored.
      */
     function someoneArrived(bot, message) {
         if (message.channel === channels.alarmControlChannel.id) {
             log.info("Someone Arrived Home.", "From " + users[message.user]);
-            log.info(message);
-            me.emitter.emit("arrival", { command: "arrival", who: "alarmbot" });
+            me.emitter.emit("presence", { event: "presence-present", who: "alarmbot" });
             bot.reply(message, "Good to see you home.");// + message.match[1] + ".");
         }
     }
 
     /**
-     * Emits the disarm message.
+     * Emits a presence indicator indicating no one is in the facility being monitored
      */
-    function someoneLeft(bot, message) {
+    function everyoneLeft(bot, message) {
         if (message.channel === channels.alarmControlChannel.id) {
             log.info("Someone Left Home.", "From " + users[message.user]);
-            log.info(message);
-            me.emitter.emit("departure", { command: "departure", who: "alarmbot" });
+            me.emitter.emit("presence", { event: "presence-absent", who: "alarmbot" });
             bot.reply(message, "Have a nice adventure.");// + message.match[1] + "! Come back soon.");
         }
     }
@@ -157,8 +193,7 @@ module.exports = function(config) {
     function armNow(bot, message) {
         if (message.channel === channels.alarmControlChannel.id) {
             log.info("Request to arm immediately received.", "From " + users[message.user]);
-            me.emitter.emit("arm", { command: "arm-immediate", who: "alarmbot" });
-            bot.reply(message, "Alarm has been armed successfully.");
+            me.emitter.emit("alarm", { event: "alarm-arm-manual", who: users[message.user] });
         }
     }
 
@@ -168,8 +203,7 @@ module.exports = function(config) {
     function disarmNow(bot, message) {
         if (message.channel === channels.alarmControlChannel.id) {
             log.info("Request to disarm immediately received.", "From " + users[message.user]);
-            me.emitter.emit("disarm", { command: "disarm-immediate", who: "alarmbot" });
-            bot.reply(message, "Alarm has been disarmed successfully.");
+            me.emitter.emit("alarm", { event: "alarm-disarm-manual", who: users[message.user] });
         }
     }
 
@@ -181,9 +215,9 @@ module.exports = function(config) {
             log.info("Request to show help received.", "Received from" + users[message.user]);
             bot.reply(message, "I am keeping an eye on when you come and go and will automatically arm the alarm when everyone leaves.");
             bot.reply(message, "I can also respond to a number of different commands.");
-            bot.reply(message, "'arm now' Immediately arms the alarm.");
-            bot.reply(message, "'disarm now' Immediately disarms the alarm.");
-            bot.reply(message, "'help' Shows this help screen.");
+            for (const command of commands.filter(function(c) { return c.help })) {
+                bot.reply(message, command.trigger + ": " + command.help);
+            }
         }
     }
 
@@ -191,7 +225,7 @@ module.exports = function(config) {
      * Defines what events we are interested in knowing about.
      */
     function interestedIn() {
-        return [ "tamper", "movement" ];
+        return [ "tamper", "movement", "zone", "alarm", "shutdown" ];
     }
 
     /**
@@ -206,22 +240,22 @@ module.exports = function(config) {
 
     function tamperStart(event) {
         log.info("Sending Tamper Start Notification");
-        botSend(channels.tamperNotificationChannel, "Tamper detected in the " + event.zone);
+        botSend(channels.tamperNotificationChannel, "Tamper started: " + event.zone);
     }
 
     function tamperEnd(event) {
         log.info("Sending Tamper End Notification");
-        botSend(channels.tamperNotificationChannel, "Tamper event ended in the " + event.zone);
+        botSend(channels.tamperNotificationChannel, "Tamper ended:" + event.zone);
     }
 
     function movementStart(event) {
         log.info("Sending Movement Start Notification");
-        botSend(channels.movementNotificationChannel, "Movement detected in the " + event.zone);
+        botSend(channels.movementNotificationChannel, "Movement started: " + event.zone);
     }
 
     function movementEnd(event) {
         log.info("Sending Movement End Notification");
-        botSend(channels.movementNotificationChannel, "Movement has stopped in the " + event.zone);
+        botSend(channels.movementNotificationChannel, "Movement ended: " + event.zone);
     }
 
     function botSend(channel, message) {
@@ -234,5 +268,33 @@ module.exports = function(config) {
             // TODO(mark): Buffer messages in memory until they can be dispatched.
             log.info("No connection to slack - message dropped!");
         }
+    }
+
+    /**
+     * Transmits a zone report to the channel if we are the target of the report.
+     */
+    function zoneReportReceived(event) {
+        if (event.target === "alarmbot") {
+            for (let reportLine of event.report) {
+                botSend(channels.alarmControlChannel, reportLine);
+            }
+        }
+    }
+
+    function alarmArmed(event) {
+        log.info("sending armed message");
+        botSend(channels.alarmControlChannel, "Armed: " + event.reason);
+    }
+
+    function alarmDisarmed(event) {
+        botSend(channels.alarmControlChannel, "Disarmed: " + event.reason);
+    }
+
+    function alarmAlertStart(event) {
+        botSend(channels.alarmNotificationChannel, "Intrusion Detected in Zone " + event.triggerZone);
+    }
+
+    function alarmAlertEnd(event) {
+        botSend(channels.alarmNotificationChannel, "Intrusion Ended because " + event.reason);
     }
 }

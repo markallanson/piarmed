@@ -36,6 +36,8 @@ module.exports = function(config) {
     /** Regidter for enabling the pullup resistor on the pins of GPIO bank A */
     const GPPUB_ADDR = 0x0d;
 
+    let icReadFailureCount = 0;
+
     setup();
 
     log.info("Polling every ms", config.pollInterval);
@@ -71,26 +73,40 @@ module.exports = function(config) {
     /**
      * Poll the bus and report the statuses of each configured pin.
      */
-    function pollLoop() {
+    function pollLoop(overrideInterval) {
         // TODO: Only run this loop if we have > 1 pin set to input
         setTimeout(function() {
             // read the two status bytes from the ic
-            const a = i2cInstance.readByteSync(config.address, GPIOA_ADDR);
-            const b = i2cInstance.readByteSync(config.address, GPIOB_ADDR);
+            try {
+                const a = i2cInstance.readByteSync(config.address, GPIOA_ADDR);
+                const b = i2cInstance.readByteSync(config.address, GPIOB_ADDR);
 
-//            log.info("GPIO A " + a.toString(2));
-//            log.info("GPIO B " + b.toString(2));
+                // after a successfull read, reset the read failure counter.
+                icReadFailureCount = 0;
 
-            // publish the status of each cnfigured pin.
-            config.pins.forEach(function(pin) {
-                if (pin.direction === "in") {
-                    me.emitter.emit(pin.id.toString(), decode(pin.id, pin.id > 8 ? b : a));
+                // publish the status of each cnfigured pin.
+                config.pins.forEach(function(pin) {
+                    if (pin.direction === "in") {
+                        me.emitter.emit(pin.id.toString(), decode(pin.id, pin.id > 8 ? b : a));
+                    }
+                });
+
+                // re-enter poll
+                pollLoop();
+            } catch (e) {
+                // if we fail more than 10 times in a row raise an IC read failure alert.
+                icReadFailureCount = icReadFailureCount + 1;
+                if (icReadFailureCount > 10) {
+                    me.emitter.emit("failure", { event: "ic-read-failure", at: me.config});
                 }
-            });
+                log.info("Could not read from IC. Waiting before attempting another retry.", e);
 
-            // re-enter poll
-            pollLoop();
-        }, config.pollInterval);
+                // TODO: Pull the reset pin on the IC low then high again to initiate a reset.
+
+                // even though we have failed, keep polling in case it comes good.
+                pollLoop(2000);
+            }
+        }, overrideInterval ? overrideInterval : config.pollInterval);
     }
 
     /**
@@ -137,15 +153,23 @@ module.exports = function(config) {
      * Decoded value: 1<p>
      *
      * Example, Pin ID 16 (Bank B, Pin 8 - GPB7 on the datasheet), pin state high.<br />
-     * Pin ID 16, HexMapped: 0x80 - 10000000<br />
+     * Pin ID 16, PinMapped: 0x80 - 10000000<br />
      * GPIO State: 0xFF - 11111111<br />
      * 10000000 & 11111111 = 10000000<br />
      * 10000000 >> ((16 - 1) % 7) = 00000001<br />
      * 10000000 >> (7) = 00000001<br />
      * Decoded value: 1
+     *
+     * Pin ID 16, PinMapped: 0x80 - 1000000000000000<br />
+     * GPIO State 0xFF - 11111111
+     * (pinMap(1000000000000000 >> 8) & 11111111) >> ((16-1) % 8)
+     * (pinMap(10000000) & 11111111) >> (15 % 8)
+     * (10000000 & 11111111) >> 7
+     * 10000000 >> 7
+     * 1
      */
     function decode(pinId, gpioState) {
-        return (pinMap(pinId % 8) & gpioState) >> ((pinId - 1) % 8);
+        return (pinMap(((pinId - 1) % 8) + 1) & gpioState) > 0 ? 1 : 0;
     }
 
     /**
@@ -163,15 +187,14 @@ module.exports = function(config) {
      * 00000001 << 2
      * 00000100
      *
-     * Example: Pin 15
-     * Pin 15 - 0x15 - 00001111
-     * 1 << ((15 - 1) % 8)
-     * 1 << (14 % 8)
-     * 1 << 6
+     * Example: Pin 16
+     * Pin 16 - 0x8000 - 00000000
+     * 1 << (16 - 1)
+     * 1 << 15
      * 00000001 << 6
-     * 01000000
+     * 100000000000000
      *
-     * @returns A single byte representing the address of that Pin in it's GPIO bank.
+     * @returns A value that indicates it's bit in the 16 bit wide pin bank
      */
     function pinMap(pinId) {
         return 1 << (pinId - 1);

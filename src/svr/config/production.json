@@ -1,3 +1,391 @@
 {
-
+    "generators": [
+            {
+                "name": "office-pir",
+                "module": "./generator/genericpir",
+                "cfg": {
+                    "zone": "Office",
+                    "inputs": [
+                        {
+                            "name": "movement",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 50
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-1",
+                                    "pin": 9
+                                }
+                            }
+                        },
+                        {
+                            "name": "tamper",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 50
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-1",
+                                    "pin": 10
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "living-room-pir",
+                "module": "./generator/genericpir",
+                "cfg": {
+                    "zone": "Living Room",
+                    "inputs": [
+                        {
+                            "name": "movement",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 100
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-1",
+                                    "pin": 11
+                                }
+                            }
+                        },
+                        {
+                            "name": "tamper",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 50
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-1",
+                                    "pin": 12
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "lounge-room-pir",
+                "module": "./generator/genericpir",
+                "cfg": {
+                    "zone": "Lounge Room",
+                    "inputs": [
+                        {
+                            "name": "movement",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 100
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-1",
+                                    "pin": 13
+                                }
+                            }
+                        },
+                        {
+                            "name": "tamper",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 50
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-1",
+                                    "pin": 14
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "kitchen-pir",
+                "module": "./generator/genericpir",
+                "cfg": {
+                    "zone": "Downstairs Kitchen",
+                    "inputs": [
+                        {
+                            "name": "movement",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 100
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-1",
+                                    "pin": 15
+                                }
+                            }
+                        },
+                        {
+                            "name": "tamper",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 50
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-1",
+                                    "pin": 16
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "master-bedroom-pir",
+                "module": "./generator/genericpir",
+                "cfg": {
+                    "zone": "Master Bedroom",
+                    "inputs": [
+                        {
+                            "name": "movement",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 100
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-2",
+                                    "pin": 1
+                                }
+                            }
+                        },
+                        {
+                            "name": "tamper",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 50
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-2",
+                                    "pin": 2
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "guest-bedroom-pir",
+                "module": "./generator/genericpir",
+                "cfg": {
+                    "zone": "Guest Bedroom 1",
+                    "inputs": [
+                        {
+                            "name": "movement",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 100
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-2",
+                                    "pin": 3
+                                }
+                            }
+                        },
+                        {
+                            "name": "tamper",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 50
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-2",
+                                    "pin": 4
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "kids-bedroom-1-pir",
+                "module": "./generator/genericpir",
+                "cfg": {
+                    "zone": "Kids Bedroom 1",
+                    "inputs": [
+                        {
+                            "name": "movement",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 100
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-2",
+                                    "pin": 5
+                                }
+                            }
+                        },
+                        {
+                            "name": "tamper",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 50
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-2",
+                                    "pin": 6
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "upstairs-kitchen-pir",
+                "module": "./generator/genericpir",
+                "cfg": {
+                    "zone": "Upstairs Kitchen",
+                    "inputs": [
+                        {
+                            "name": "movement",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 100
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-2",
+                                    "pin": 7
+                                }
+                            }
+                        },
+                        {
+                            "name": "tamper",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 50
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-2",
+                                    "pin": 8
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "upstairs-hallway-pir",
+                "module": "./generator/genericpir",
+                "cfg": {
+                    "zone": "Upstairs Hallway",
+                    "inputs": [
+                        {
+                            "name": "movement",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 100
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-2",
+                                    "pin": 9
+                                }
+                            }
+                        },
+                        {
+                            "name": "tamper",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 50
+                                    }
+                                },
+                                "cfg": {
+                                    "ic": "io-expander-2",
+                                    "pin": 10
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+      ]
 }

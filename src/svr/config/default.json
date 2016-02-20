@@ -17,9 +17,7 @@
                     { "id": 13, "pullup": true, "direction": "in" },
                     { "id": 14, "pullup": true, "direction": "in" },
                     { "id": 15, "pullup": true, "direction": "in" },
-                    { "id": 16, "pullup": true, "direction": "in" },
-                    { "id": 17, "pullup": true, "direction": "in" },
-                    { "id": 18, "pullup": true, "direction": "in" }
+                    { "id": 16, "pullup": true, "direction": "in" }
                 ],
                 "pollInterval": 10
             }
@@ -58,11 +56,6 @@
             "name": "alarmstatemanager",
             "module": "./combos/alarmstatemanager",
             "cfg": { }
-        },
-        {
-            "name": "presencemanager",
-            "module": "./combos/presencemanager",
-            "cfg": { }
         }
     ],
     "generators": [
@@ -80,7 +73,7 @@
                             "filter": {
                                 "module": "./data/inputfilter",
                                 "cfg": {
-                                    "sampleSize": 200
+                                    "sampleSize": 50
                                 }
                             },
                             "cfg": {
@@ -97,7 +90,7 @@
                             "filter": {
                                 "module": "./data/inputfilter",
                                 "cfg": {
-                                    "sampleSize": 50
+                                    "sampleSize": 100
                                 }
                             },
                             "cfg": {
