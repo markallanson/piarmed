@@ -44,10 +44,10 @@
                 }
             },
             {
-                "name": "living-room-pir",
+                "name": "living-lounge-pir",
                 "module": "./generator/genericpir",
                 "cfg": {
-                    "zone": "Living Room",
+                    "zone": "Living / Lounge",
                     "inputs": [
                         {
                             "name": "movement",
@@ -87,10 +87,10 @@
                 }
             },
             {
-                "name": "lounge-room-pir",
+                "name": "kids-bed-1-pir",
                 "module": "./generator/genericpir",
                 "cfg": {
-                    "zone": "Lounge Room",
+                    "zone": "Kids Bedroom 1",
                     "inputs": [
                         {
                             "name": "movement",
@@ -259,42 +259,25 @@
                 }
             },
             {
-                "name": "kids-bedroom-1-pir",
-                "module": "./generator/genericpir",
+                "name": "side-door-sensor",
+                "module": "./generator/switch",
                 "cfg": {
-                    "zone": "Kids Bedroom 1",
+                    "zone": "Side Door",
                     "inputs": [
                         {
-                            "name": "movement",
-                            "mode": "normally open",
+                            "name": "input",
+                            "mode": "normally closed",
                             "dataAdaptor": {
                                 "module": "./data/mcptwothreezerooneseveninadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
-                                        "sampleSize": 100
+                                        "sampleSize": 10
                                     }
                                 },
                                 "cfg": {
                                     "ic": "io-expander-2",
                                     "pin": 5
-                                }
-                            }
-                        },
-                        {
-                            "name": "tamper",
-                            "mode": "normally open",
-                            "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
-                                "filter": {
-                                    "module": "./data/inputfilter",
-                                    "cfg": {
-                                        "sampleSize": 50
-                                    }
-                                },
-                                "cfg": {
-                                    "ic": "io-expander-2",
-                                    "pin": 6
                                 }
                             }
                         }

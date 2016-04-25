@@ -118,7 +118,11 @@ module.exports = function(config) {
     function generateZoneReport(event) {
         let zoneReport = [ "Zone Report @ " + moment().format("dddd, MMMM Do YYYY, h:mm:ss a") ];
         for (const zone of trackedZones) {
-            zoneReport.push("Zone " + zone.zone + " " + zone.state);
+            let zoneLine = zone.zone + " " + zone.state + ".";
+            if (zone.lastMovement) {
+                zoneLine = zoneLine + " Last Movement " + moment(zone.lastMovement).fromNow();
+            }
+            zoneReport.push(zoneLine);
         }
         log.info("Zone Report", zoneReport);
         log.info("Sending Zone Report to " + event.source);
@@ -126,6 +130,10 @@ module.exports = function(config) {
     }
 
     function movementStart(event) {
+        let trackedZone = trackedZones.find(function(trackedZone) { return trackedZone.zone === event.zone; });
+        if (trackedZone) {
+            trackedZone.lastMovement = new Date();
+        }
         if (armed) {
             alerting = true;
             me.emitter.emit("alarm", { event: "alarm-alert-start", triggerZone: event.zone })

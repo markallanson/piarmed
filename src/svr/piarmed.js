@@ -9,9 +9,6 @@ const log = Bunyan.createLogger({ name: "Piarmed" });
 const alarm = new Alarm(generateConfiguration());
 alarm.start();
 
-/**
- * Generates allarm configuration from the supplied configuration file.
- */
 function generateConfiguration() {
     const ics = [];
     const generators = [];
@@ -53,9 +50,6 @@ function generateConfiguration() {
     };
 }
 
-/**
- * Creates and configures a notifier.
- */
 function createNotifier(definition, ics) {
     const Notifier = require(definition.module);
 
@@ -67,9 +61,6 @@ function createNotifier(definition, ics) {
     return new Notifier(definition.cfg);
 }
 
-/**
- * Creates and configures a generator.
- */
 function createGenerator(definition, ics) {
     // create each of the inputs defined in the generator
     for (const inputDefinition of definition.cfg.inputs) {

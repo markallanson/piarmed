@@ -110,7 +110,8 @@
             "cfg": {
                 "interestedIn": [
                     "tamper",
-                    "movement"
+                    "movement",
+                    "switch"
                 ]
             }
         },
