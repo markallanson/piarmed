@@ -1,7 +1,5 @@
 "use strict";
 
-const EventEmitter = require("events");
-
 /**
  * Provides a simple pin based adaptor for writing to the MCP23017.
  *

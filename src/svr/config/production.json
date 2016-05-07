@@ -10,7 +10,7 @@
                             "name": "movement",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -18,8 +18,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-1",
-                                    "pin": 9
+                                    "gpio": 21,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         },
@@ -27,7 +28,7 @@
                             "name": "tamper",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -35,8 +36,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-1",
-                                    "pin": 10
+                                    "gpio": 20,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         }
@@ -53,7 +55,7 @@
                             "name": "movement",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -61,8 +63,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-1",
-                                    "pin": 11
+                                    "gpio": 26,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         },
@@ -70,7 +73,7 @@
                             "name": "tamper",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -78,8 +81,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-1",
-                                    "pin": 12
+                                    "gpio": 16,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         }
@@ -96,7 +100,7 @@
                             "name": "movement",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -104,8 +108,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-1",
-                                    "pin": 13
+                                    "gpio": 19,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         },
@@ -113,7 +118,7 @@
                             "name": "tamper",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -121,8 +126,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-1",
-                                    "pin": 14
+                                    "gpio": 13,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         }
@@ -139,7 +145,7 @@
                             "name": "movement",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -147,8 +153,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-1",
-                                    "pin": 15
+                                    "gpio": 12,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         },
@@ -156,7 +163,7 @@
                             "name": "tamper",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -164,8 +171,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-1",
-                                    "pin": 16
+                                    "gpio": 6,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         }
@@ -182,7 +190,7 @@
                             "name": "movement",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -190,8 +198,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-2",
-                                    "pin": 1
+                                    "gpio": 7,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         },
@@ -199,7 +208,7 @@
                             "name": "tamper",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -207,8 +216,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-2",
-                                    "pin": 2
+                                    "gpio": 5,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         }
@@ -225,7 +235,7 @@
                             "name": "movement",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -233,8 +243,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-2",
-                                    "pin": 3
+                                    "gpio": 8,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         },
@@ -242,7 +253,7 @@
                             "name": "tamper",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -250,8 +261,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-2",
-                                    "pin": 4
+                                    "gpio": 11,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         }
@@ -268,7 +280,7 @@
                             "name": "input",
                             "mode": "normally closed",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -276,8 +288,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-2",
-                                    "pin": 5
+                                    "gpio": 9,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         }
@@ -294,7 +307,7 @@
                             "name": "movement",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -302,8 +315,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-2",
-                                    "pin": 7
+                                    "gpio": 25,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         },
@@ -311,7 +325,7 @@
                             "name": "tamper",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -319,8 +333,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-2",
-                                    "pin": 8
+                                    "gpio": 10,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         }
@@ -337,7 +352,7 @@
                             "name": "movement",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -345,8 +360,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-2",
-                                    "pin": 9
+                                    "gpio": 23,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         },
@@ -354,7 +370,7 @@
                             "name": "tamper",
                             "mode": "normally open",
                             "dataAdaptor": {
-                                "module": "./data/mcptwothreezerooneseveninadaptor",
+                                "module": "./data/pininadaptor",
                                 "filter": {
                                     "module": "./data/inputfilter",
                                     "cfg": {
@@ -362,8 +378,9 @@
                                     }
                                 },
                                 "cfg": {
-                                    "ic": "io-expander-2",
-                                    "pin": 10
+                                    "gpio": 22,
+                                    "mode": "poll",
+                                    "pollInterval": 10
                                 }
                             }
                         }

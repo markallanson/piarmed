@@ -1,48 +1,5 @@
 {
     "ics": [
-        {
-            "name": "io-expander-1",
-            "module": "./ics/mcptwothreezerooneseven.js",
-            "cfg": {
-                "bus": 1,
-                "address": 32,
-                "pins": [
-                    { "id": 6,  "pullup": false, "direction": "out" },
-                    { "id": 7,  "pullup": false, "direction": "out" },
-                    { "id": 8,  "pullup": false, "direction": "out" },
-                    { "id": 9,  "pullup": true, "direction": "in" },
-                    { "id": 10, "pullup": true, "direction": "in" },
-                    { "id": 11, "pullup": true, "direction": "in" },
-                    { "id": 12, "pullup": true, "direction": "in" },
-                    { "id": 13, "pullup": true, "direction": "in" },
-                    { "id": 14, "pullup": true, "direction": "in" },
-                    { "id": 15, "pullup": true, "direction": "in" },
-                    { "id": 16, "pullup": true, "direction": "in" }
-                ],
-                "pollInterval": 10
-            }
-        },
-        {
-            "name": "io-expander-2",
-            "module": "./ics/mcptwothreezerooneseven.js",
-            "cfg": {
-                "bus": 1,
-                "address": 36,
-                "pins": [
-                    { "id": 1,  "pullup": true, "direction": "in" },
-                    { "id": 2, "pullup": true, "direction": "in" },
-                    { "id": 3, "pullup": true, "direction": "in" },
-                    { "id": 4, "pullup": true, "direction": "in" },
-                    { "id": 5, "pullup": true, "direction": "in" },
-                    { "id": 6, "pullup": true, "direction": "in" },
-                    { "id": 7, "pullup": true, "direction": "in" },
-                    { "id": 8, "pullup": true, "direction": "in" },
-                    { "id": 9, "pullup": true, "direction": "in" },
-                    { "id": 10, "pullup": true, "direction": "in" }
-                ],
-                "pollInterval": 10
-            }
-        }
     ],
     "combos": [
         {
@@ -60,48 +17,48 @@
     ],
     "generators": [
         {
-            "name": "office-pir",
-            "module": "./generator/genericpir",
-            "cfg": {
-                "zone": "Office",
-                "inputs": [
-                    {
-                        "name": "tamper",
-                        "mode": "normally open",
-                        "dataAdaptor": {
-                            "module": "./data/mcptwothreezerooneseveninadaptor",
-                            "filter": {
-                                "module": "./data/inputfilter",
+                "name": "office-pir",
+                "module": "./generator/genericpir",
+                "cfg": {
+                    "zone": "Office",
+                    "inputs": [
+                        {
+                            "name": "movement",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/pininadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 50
+                                    }
+                                },
                                 "cfg": {
-                                    "sampleSize": 50
+                                    "gpio": 21,
+                                    "mode": "poll"
                                 }
-                            },
-                            "cfg": {
-                                "ic": "io-expander-1",
-                                "pin": 10
+                            }
+                        },
+                        {
+                            "name": "tamper",
+                            "mode": "normally open",
+                            "dataAdaptor": {
+                                "module": "./data/pininadaptor",
+                                "filter": {
+                                    "module": "./data/inputfilter",
+                                    "cfg": {
+                                        "sampleSize": 50
+                                    }
+                                },
+                                "cfg": {
+                                    "gpio": 20,
+                                    "mode": "poll"
+                                }
                             }
                         }
-                    },
-                    {
-                        "name": "movement",
-                        "mode": "normally open",
-                        "dataAdaptor": {
-                            "module": "./data/mcptwothreezerooneseveninadaptor",
-                            "filter": {
-                                "module": "./data/inputfilter",
-                                "cfg": {
-                                    "sampleSize": 100
-                                }
-                            },
-                            "cfg": {
-                                "ic": "io-expander-1",
-                                "pin": 9
-                            }
-                        }
-                    }
-                ]
+                    ]
+                }
             }
-        }
     ],
     "notifiers": [
         {
@@ -123,10 +80,9 @@
                 "onEvent": "power-on",
                 "offEvent": "power-off",
                 "dataAdaptor": {
-                    "module": "./data/mcptwothreezeroonesevenoutadaptor",
+                    "module": "./data/pinoutadaptor",
                     "cfg": {
-                        "ic": "io-expander-1",
-                        "pin": 8
+                        "gpio": 18
                     }
                 }
             }
@@ -139,10 +95,9 @@
                 "onEvent": "tamper-start",
                 "offEvent": "tamper-end",
                 "dataAdaptor": {
-                    "module": "./data/mcptwothreezeroonesevenoutadaptor",
+                    "module": "./data/pinoutadaptor",
                     "cfg": {
-                        "ic": "io-expander-1",
-                        "pin": 7
+                        "gpio": 17
                     }
                 }
             }
@@ -155,10 +110,9 @@
                 "onEvent": "movement-start",
                 "offEvent": "movement-end",
                 "dataAdaptor": {
-                    "module": "./data/mcptwothreezeroonesevenoutadaptor",
+                    "module": "./data/pinoutadaptor",
                     "cfg": {
-                        "ic": "io-expander-1",
-                        "pin": 6
+                        "gpio": 27
                     }
                 }
             }
